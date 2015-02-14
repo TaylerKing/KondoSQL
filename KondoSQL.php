@@ -25,23 +25,12 @@
 				foreach ($this->_errors[0] as $error) {
 					switch($error) {
 						case "0":
-							$a .= "<br/><b> - " . $error . "</b>: Null value(s) supplied for get()";
+						$a .= "<br/><b> - " . $error . "</b>: Null value(s) supplied for get()";
 						break;
 					}
 				}
 				return $a . $this->_errors[2];
 			} else return false;
 		}
-		/*public function __call($method, array $arguments) {
-			switch ($method) {
-				case 'value':
-					# code...
-					break;
-				
-				default:
-					# code...
-					break;
-			}
-		}*/
 	}
 ?>
