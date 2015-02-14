@@ -1,4 +1,6 @@
 <?php
 	require_once("KondoSQL.php");
-	new KondoSQL;
+	$KondoSQL = KondoSQL::instance();
+	$KondoSQL->get();
+	echo $KondoSQL->errors();
 ?>
