@@ -1,7 +1,4 @@
 <?php
-	/*
-	 *  $db->get('table', 'column(s)', array('column', 'is equal/less/more/etc', 'data'));
-	 */
 	class KondoSQL {
 		private static $_instance = null;
 		private $_pdo,
@@ -11,7 +8,7 @@
 		$_count = 0;
 		private function __construct() {
 			try {
-				$this->_pdo = new PDO('mysql:host=' . DB[0] . ';dbname=' . DB[3], DB[1], DB[2]);
+				$this->_pdo = new PDO('mysql:host=' . DB[0] . ';dbname=' . DB[3], DB[1], DB[2]/*, array(PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION)*/);
 				$this->_success = true;
 			} catch (PDOExceptioin $e) {
 				$this->_success = false;
@@ -23,7 +20,7 @@
 			}
 			return self::$_instance;
 		}
-		public function query($sql, $args = array()) {
+		public function query($sql, $args = array(), $type = 3) {
 			if($this->_query = $this->_pdo->prepare($sql)) {
 				$x = 1;
 				if(count($args)) {
@@ -33,8 +30,10 @@
 					}
 				}
 				if($this->_query->execute()) {
-					$this->_results = $this->_query->fetchAll(PDO::FETCH_OBJ);
-					$this->_count = $this->_query->rowCount();
+					if($type == 3) {
+						$this->_results = $this->_query->fetchAll(PDO::FETCH_OBJ);
+						$this->_count = $this->_query->rowCount();
+					}
 				} else {
 					$this->_error = true;
 				}
@@ -49,7 +48,7 @@
 				$value = $where[2];
 				if(in_array($operator, $operators)) {
 					$sql = "{$action} FROM {$table} WHERE {$field} {$operator} ?";
-					if(!$this->query($sql, array($value))->error()) {
+					if(!$this->query($sql, array($value), 3)->error()) {
 						return $this;
 					} else $this->_error = true;
 				}
@@ -69,10 +68,11 @@
 					$x++;
 				}
 				$sql = "INSERT INTO {$table} (`" . implode('`,`', $keys) . "`) VALUES ({$values})";
-				if(!$this->query($sql, $args)->error()) {
+				if(!$this->query($sql, $args, 1)->error()) {
 					return true;
 				}
 			}
+			return false;
 		}
 		public function update($table, $where = array(), $args) {
 			if(count($where) === 3) {
@@ -83,20 +83,21 @@
 				if(in_array($operator, $operators)) {
 					$set = '';
 					$x = 1;
+					$ark = array();
 					foreach($args as $arg => $vark) {
-						$set .= "{$arg} = ?";
+						array_push($ark, $vark);
+						$set .= "`{$arg}` = ?";
 						if($x < count($args)) {
 							$set .= ', ';
 						}
 						$x++;
 					}
 					$sql = "UPDATE {$table} SET {$set} WHERE {$field} {$operator} {$value}";
-					echo $sql;
-					if(!$this->query($sql, array($vark))->error()) {
+					if(!$this->query($sql, $args, 1)->error()) {
 						return $this;
-					} else echo "uh oh";
-				}
-			}
+					} else echo $sql;
+				} else echo "no";
+			} else echo "no";
 			return false;
 		}
 		public function get($table, $where) {
